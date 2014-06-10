@@ -1,4 +1,4 @@
-package net.devmike;
+package net.devmike.audioInterruptDetector;
 
 import java.io.File;
 import java.io.IOException;
@@ -10,25 +10,33 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.SourceDataLine;
 import javax.sound.sampled.TargetDataLine;
 
+import net.devmike.audioInterruptDetector.AudioInterruptVisualizer;
+
 public class Main
 {
 	public static void main(String[] args) throws Exception
 	{
-		AudioVisualizer audioVisualizer = new AudioVisualizer();
-		//streamFromFile(audioVisualizer);
-		streamFromMic(audioVisualizer);
+		// create the visualizer
+		AudioInterruptVisualizer audioVisualizer = new AudioInterruptVisualizer(AudioInterruptDetector.INTERRUPT_AMPLITUDE_THRESHOLD);
+		
+		// create the detector
+		AudioInterruptDetector audioInterruptDetector = new AudioInterruptDetector(audioVisualizer);
+		
+		
+		//streamFromFile(audioInterruptDetector);
+		streamFromMic(audioInterruptDetector);
 	}
 	
-	private static void streamFromMic(AudioVisualizer audioVisualizer) throws Exception
+	private static void streamFromMic(AudioInterruptDetector audioInterruptDetector) throws Exception
 	{
 		// create our format
 		AudioFormat audioFormat = new AudioFormat(
 				AudioFormat.Encoding.PCM_SIGNED, // encoding
-				44100.0f,                        // sample rate
-				16,                              // sample size in bits
+				88200.0f,                        // sample rate. NOTE: Changing this may throw off several algorithms since we assume 1 unit of time between each sample
+				16,                              // sample size in bits. NOTE: If you change this, you will have to change the amplitude data type.
 				1,                               // channels
 				2,                               // frame size
-				44100.0f,                        // frame rate
+				88200.0f,                        // frame rate
 				true);                           // big-endian
 		
 		
@@ -44,23 +52,24 @@ public class Main
 		// start listening
 		line.start();
 		
-		int numIterrupts = 0;
-		
+		long numIterrupts = 0;
 		byte[] audioByteBuffer = new byte[line.getBufferSize()];
 		while (true)
 		{
 			// read bytes from the line
-			int numBytesRead = line.read(audioByteBuffer, 0, audioByteBuffer.length);
+			int numBytesRead = line.read(audioByteBuffer, 0, 180);
 			
-			// process the data we read
-			if (numBytesRead > 0)
-				numIterrupts += audioVisualizer.processAudioData(audioByteBuffer, 0, numBytesRead, audioFormat.isBigEndian());
+			if (line.available() > line.getBufferSize() / 2)
+				System.err.println("Getting behind! " + line.available());
 			
-			System.out.println(numIterrupts);
+			if (numBytesRead > -1)
+				numIterrupts += audioInterruptDetector.processAudioData(audioByteBuffer, 0, numBytesRead, audioFormat.isBigEndian());
+			
+			Thread.sleep(1);
 		}
 	}
 	
-	private static void streamFromFile(AudioVisualizer audioVisualizer) throws Exception
+	private static void streamFromFile(AudioInterruptDetector audioInterruptDetector) throws Exception
 	{
 		// get test file
 		File testFile = new File(System.getProperty("user.dir") + File.separatorChar + "res" + File.separatorChar + "testFlowMeterVeryFast.wav");
@@ -103,7 +112,7 @@ public class Main
 			// process the data we have read so far
 			if (numBytesRead > 0)
 			{
-				numIterrupts += audioVisualizer.processAudioData(audioByteBuffer, 0, numBytesRead, audioFormat.isBigEndian());
+				numIterrupts += audioInterruptDetector.processAudioData(audioByteBuffer, 0, numBytesRead, audioFormat.isBigEndian());
 				totalNumBytesRead += numBytesRead;
 			}
 			
