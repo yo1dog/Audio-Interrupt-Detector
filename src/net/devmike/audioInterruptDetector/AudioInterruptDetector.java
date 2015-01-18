@@ -261,6 +261,13 @@ public class AudioInterruptDetector
 				visualizer.addRawSample(rawSample);
 		}
 		
+		// check if we have a leftover byte
+		if (evenDataLength < dataLength)
+		{
+			leftoverAudioDataByte = data[dataOffset + dataLength - 1];
+			useLeftoverAudioDataByte = true;
+		}
+		
 		
 		
 		// -------------------------------------------------------------------

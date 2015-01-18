@@ -12,6 +12,7 @@ import javax.sound.sampled.TargetDataLine;
 
 import net.devmike.audioInterruptDetector.AudioInterruptVisualizer;
 
+// TODO: memopry leak
 public class Main
 {
 	public static void main(String[] args) throws Exception
@@ -23,8 +24,8 @@ public class Main
 		AudioInterruptDetector audioInterruptDetector = new AudioInterruptDetector(audioVisualizer);
 		
 		
-		//streamFromFile(audioInterruptDetector);
-		streamFromMic(audioInterruptDetector);
+		streamFromFile(audioInterruptDetector);
+		//streamFromMic(audioInterruptDetector);
 	}
 	
 	private static void streamFromMic(AudioInterruptDetector audioInterruptDetector) throws Exception
@@ -72,7 +73,7 @@ public class Main
 	private static void streamFromFile(AudioInterruptDetector audioInterruptDetector) throws Exception
 	{
 		// get test file
-		File testFile = new File(System.getProperty("user.dir") + File.separatorChar + "res" + File.separatorChar + "testFlowMeterVeryFast.wav");
+		File testFile = new File(System.getProperty("user.dir") + File.separatorChar + "res" + File.separatorChar + "testFlowMeterFast.wav");
 		
 		// load file as audio stream
 		AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(testFile);
