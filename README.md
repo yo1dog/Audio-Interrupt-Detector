@@ -4,4 +4,4 @@ Detects interrupts through an audio signal. I developed this so I could detect i
 
 ---------------------------------------
 
-[Screenshot](http://s3.awesomebox.net/Audio%20Interrupt%20Detector/AudioInterruptDetectorSC.png)
+![Screenshot](http://s3.awesomebox.net/Audio%20Interrupt%20Detector/AudioInterruptDetectorSC.png)
